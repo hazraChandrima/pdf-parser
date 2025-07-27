@@ -1,0 +1,56 @@
+# just a very standard venv name :p
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Testing directories and files
+input/
+output/
+sample_dataset/
+debug_*.txt
+*.log
+
+# IDE and editor files
+.vscode/
+.idea/
+# i use vim btw :)
+*.swp
+*.swo
+*~
+
+# OS files - for babies using mac
+.DS_Store
+Thumbs.db
+.directory
+
+# Git
+.git/
+
+# Documentation and markdown
+README.md
+*.md
+docs/
+
+# Jupyter notebooks
+*.ipynb
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+build/
+dist/
