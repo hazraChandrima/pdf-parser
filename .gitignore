@@ -1,0 +1,57 @@
+# no one's gonna be reading any of thiss, just lyk my DMs :(
+# very standard venv name -_-
+venv/
+env/
+.venv/
+.env
+
+# Python
+__pycache__/
+*$py.class
+.Python
+build/
+dist/
+downloads/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+.installed.cfg
+MANIFEST
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# goddamn logssss
+*.log
+
+# IDEs/editors
+.vscode/
+.idea/
+# i use vim btw :)
+*.swp
+*.swo
+*~
+
+# i dont use mac tho- this ones for babies using macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.directory
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
