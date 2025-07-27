@@ -32,7 +32,7 @@ pip-delete-this-directory.txt
 
 # Testing directories (these change frequently during development)
 # input/*.pdf
-output/*.json
+challenge_1a/output/*.json
 debug_*.txt
 # goddamn logssss
 *.log
@@ -62,5 +62,5 @@ tmp/
 temp/
 
 # Keep empty directories
-!input/.gitkeep  
-!output/.gitkeep
+# !input/.gitkeep  
+!challenge_1a/output/.gitkeep
