@@ -29,6 +29,11 @@ pip-delete-this-directory.txt
 # Jupyter Notebook
 .ipynb_checkpoints
 
+
+# Testing directories (these change frequently during development)
+# input/*.pdf
+output/*.json
+debug_*.txt
 # goddamn logssss
 *.log
 
@@ -55,3 +60,7 @@ Thumbs.db
 *.temp
 tmp/
 temp/
+
+# Keep empty directories
+!input/.gitkeep  
+!output/.gitkeep
