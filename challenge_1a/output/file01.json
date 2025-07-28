@@ -1,5 +1,5 @@
 {
-  "title": "Application form for grant of LTC advance",
+  "title": "Signature of Government Servant",
   "outline": [
     {
       "level": "H2",
@@ -39,11 +39,6 @@
     {
       "level": "H1",
       "text": "12. Amount of advance required. Rs.",
-      "page": 1
-    },
-    {
-      "level": "H3",
-      "text": "Signature of Government Servant",
       "page": 1
     }
   ]
