@@ -160,116 +160,14 @@ class HeadingClassifier:
         
         if not early_blocks:
             return "Untitled Document"
-    
-    def _group_nearby_title_blocks(self, blocks: List[Dict]) -> List[List[Dict]]:
-        """Group text blocks that are close together and could be part of the same title"""
-        if not blocks:
-            return []
-        
-        # Sort blocks by page, then by vertical position (y-coordinate)
-        sorted_blocks = sorted(blocks, key=lambda b: (
-            b["page"], 
-            b["bbox"][1] if "bbox" in b else 0
-        ))
-        
-        groups = []
-        current_group = [sorted_blocks[0]]
-        
-        for i in range(1, len(sorted_blocks)):
-            current_block = sorted_blocks[i]
-            previous_block = sorted_blocks[i-1]
-            
-            # Check if blocks should be grouped together
-            if self._should_merge_title_blocks(previous_block, current_block):
-                current_group.append(current_block)
-            else:
-                # Start a new group
-                if current_group:
-                    groups.append(current_group)
-                current_group = [current_block]
-        
-        # Add the last group
-        if current_group:
-            groups.append(current_group)
-        
-        return groups
-    
-    def _should_merge_title_blocks(self, block1: Dict, block2: Dict) -> bool:
-        """Determine if two blocks should be merged as part of the same title"""
-        # Must be on the same page
-        if block1["page"] != block2["page"]:
-            return False
-        
-        # Check font size similarity (within 3 points)
-        font_diff = abs(block1["font_size"] - block2["font_size"])
-        if font_diff > 3:
-            return False
-        
-        # Check vertical spacing
-        if "bbox" in block1 and "bbox" in block2:
-            # Get bottom of first block and top of second block
-            block1_bottom = block1["bbox"][3]  # y2 coordinate
-            block2_top = block2["bbox"][1]     # y1 coordinate
-            
-            # Calculate vertical gap
-            vertical_gap = abs(block2_top - block1_bottom)
-            
-            # If gap is small relative to font size, they're likely part of same title
-            avg_font_size = (block1["font_size"] + block2["font_size"]) / 2
-            max_gap = avg_font_size * 1.5  # Allow gap up to 1.5x the font size
-            
-            if vertical_gap <= max_gap:
-                return True
-        
-        # Fallback: if we don't have bbox info, use text characteristics
-        text1 = block1["text"].strip()
-        text2 = block2["text"].strip()
-        
-        # If both blocks are short and look like title parts, merge them
-        if (len(text1) <= 50 and len(text2) <= 50 and 
-            not text1.endswith('.') and not text2.startswith('.')):
-            return True
-        
-        return False
-    
-    def _merge_title_group(self, group: List[Dict]) -> str:
-        """Merge a group of blocks into a single title string"""
-        if not group:
-            return ""
-        
-        # Sort blocks by vertical position (top to bottom)
-        sorted_group = sorted(group, key=lambda b: b["bbox"][1] if "bbox" in b else 0)
-        
-        merged_parts = []
-        for block in sorted_group:
-            text = block["text"].strip()
-            
-            # Skip problematic individual parts
-            if (len(text) < 1 or
-                text in self.content_filter.table_patterns or
-                self.content_filter.is_likely_table_content(text)):
-                continue
-            
-            merged_parts.append(text)
-        
-        if not merged_parts:
-            return ""
-        
-        # Join with space and clean up
-        merged_text = " ".join(merged_parts)
-        
-        # Clean up multiple spaces and normalize
-        merged_text = re.sub(r'\s+', ' ', merged_text).strip()
-        
-        return clean_heading_text(merged_text)
         
         # Find the maximum font size on the first pages
         max_font_size = max(block["font_size"] for block in early_blocks)
         
-        # Get all blocks with the maximum font size or very close to it (within 2 points)
+        # Get all blocks with the maximum font size or very close to it (within 3 points)
         largest_text_blocks = [
             block for block in early_blocks 
-            if abs(block["font_size"] - max_font_size) <= 2
+            if abs(block["font_size"] - max_font_size) <= 3
         ]
         
         # Group nearby blocks that could be part of the same title
@@ -286,6 +184,7 @@ class HeadingClassifier:
                 
             # Use the first block's properties for positioning
             primary_block = group[0]
+            
             # Skip problematic content for the merged text
             if (len(merged_text) < 5 or
                 len(merged_text) > 300 or  # Allow longer titles since we're merging
@@ -379,6 +278,121 @@ class HeadingClassifier:
         
         return "Untitled Document"
     
+    def _group_nearby_title_blocks(self, blocks: List[Dict]) -> List[List[Dict]]:
+        """Group text blocks that are close together and could be part of the same title"""
+        if not blocks:
+            return []
+        
+        # Sort blocks by page, then by vertical position (y-coordinate)
+        sorted_blocks = sorted(blocks, key=lambda b: (
+            b["page"], 
+            b["bbox"][1] if "bbox" in b else 0
+        ))
+        
+        groups = []
+        current_group = [sorted_blocks[0]]
+        
+        for i in range(1, len(sorted_blocks)):
+            current_block = sorted_blocks[i]
+            previous_block = sorted_blocks[i-1]
+            
+            # Check if blocks should be grouped together
+            if self._should_merge_title_blocks(previous_block, current_block):
+                current_group.append(current_block)
+            else:
+                # Start a new group
+                if current_group:
+                    groups.append(current_group)
+                current_group = [current_block]
+        
+        # Add the last group
+        if current_group:
+            groups.append(current_group)
+        
+        return groups
+    
+    def _should_merge_title_blocks(self, block1: Dict, block2: Dict) -> bool:
+        """Determine if two blocks should be merged as part of the same title"""
+        # Must be on the same page
+        if block1["page"] != block2["page"]:
+            return False
+        
+        # Allow small differences in font size (up to 5 points for title merging)
+        font_diff = abs(block1["font_size"] - block2["font_size"])
+        if font_diff > 5:
+            return False
+        
+        # Check vertical spacing - be more lenient for title blocks
+        if "bbox" in block1 and "bbox" in block2:
+            # Get bottom of first block and top of second block
+            block1_bottom = block1["bbox"][3]  # y2 coordinate
+            block2_top = block2["bbox"][1]     # y1 coordinate
+            
+            # Calculate vertical gap
+            vertical_gap = abs(block2_top - block1_bottom)
+            
+            # For title blocks, allow larger gaps (up to 2x font size)
+            avg_font_size = (block1["font_size"] + block2["font_size"]) / 2
+            max_gap = avg_font_size * 2.0  # Allow gap up to 2x the font size
+            
+            if vertical_gap <= max_gap:
+                return True
+            
+            # Also check if blocks are on roughly the same horizontal line
+            # (might be side-by-side title parts)
+            block1_center_y = (block1["bbox"][1] + block1["bbox"][3]) / 2
+            block2_center_y = (block2["bbox"][1] + block2["bbox"][3]) / 2
+            
+            if abs(block1_center_y - block2_center_y) <= avg_font_size * 0.5:
+                return True
+        
+        # Fallback: if we don't have bbox info, use text characteristics
+        text1 = block1["text"].strip()
+        text2 = block2["text"].strip()
+        
+        # If both blocks are reasonably short and look like title parts, merge them
+        if (len(text1) <= 80 and len(text2) <= 80 and 
+            not text1.endswith('.') and not text2.startswith('.') and
+            not re.match(r'^\d+\.', text1) and not re.match(r'^\d+\.', text2)):
+            return True
+        
+        return False
+    
+    def _merge_title_group(self, group: List[Dict]) -> str:
+        """Merge a group of blocks into a single title string"""
+        if not group:
+            return ""
+        
+        # Sort blocks by vertical position (top to bottom), then by horizontal position
+        sorted_group = sorted(group, key=lambda b: (
+            b["bbox"][1] if "bbox" in b else 0,  # y-coordinate (top to bottom)
+            b["bbox"][0] if "bbox" in b else 0   # x-coordinate (left to right)
+        ))
+        
+        merged_parts = []
+        for block in sorted_group:
+            text = block["text"].strip()
+            
+            # Skip problematic individual parts
+            if (len(text) < 1 or
+                text in self.content_filter.table_patterns or
+                self.content_filter.is_likely_table_content(text)):
+                continue
+            
+            merged_parts.append(text)
+        
+        if not merged_parts:
+            return ""
+        
+        # Join with space and clean up
+        merged_text = " ".join(merged_parts)
+        
+        # Clean up multiple spaces and normalize
+        merged_text = re.sub(r'\s+', ' ', merged_text).strip()
+        
+        return merged_text
+    
     def get_document_title(self) -> Optional[str]:
         """Get the detected document title"""
         return self.document_title
+
