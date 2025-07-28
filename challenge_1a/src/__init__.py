@@ -9,8 +9,6 @@ from .content_filter import ContentFilter
 from .font_analyzer import FontAnalyzer
 from .heading_classifier import HeadingClassifier
 
-__version__ = "1.0.0"
-__author__ = "Adobe Hackathon Team"
 
 __all__ = [
     "PDFOutlineExtractor",
